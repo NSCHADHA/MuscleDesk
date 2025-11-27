@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { AuthPages } from "@/components/auth/AuthPages"
 import { MainLayout } from "@/components/layout/MainLayout"
 import { createClient } from "@/lib/supabase/client"
+import { AuthChangeEvent, Session } from "@supabase/supabase-js"
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -22,7 +23,6 @@ export default function Home() {
 
         setIsAuthenticated(!!user)
       } catch (error) {
-        console.error("Authentication error:", error)
         setIsAuthenticated(false)
       } finally {
         setLoading(false)
@@ -34,10 +34,12 @@ export default function Home() {
     const supabase = createClient()
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session)
-      setLoading(false)
-    })
+    } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
+        setIsAuthenticated(!!session)
+        setLoading(false)
+      },
+    )
 
     return () => subscription.unsubscribe()
   }, [])
